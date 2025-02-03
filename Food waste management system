@@ -1,0 +1,177 @@
+**Database Schema (MySQL)**
+```sql
+CREATE TABLE users (
+  id INT PRIMARY KEY,
+  name VARCHAR(255),
+  email VARCHAR(255)
+);
+CREATE TABLE reports (
+  id INT PRIMARY KEY,
+  user_id INT,
+  food_type VARCHAR(255),
+  quantity VARCHAR(255),
+  date_reported DATE,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+**User Registration/Login (PHP)**
+```php
+<?php
+// register_user.php
+require_once 'db_connect.php';
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+  $name = $_POST['name'];
+  $email = $_POST['email'];
+  $query = "INSERT INTO users (name, email) VALUES ('$name', '$email')";
+  mysqli_query($conn, $query);
+}
+?>
+```
+**Food Waste Report Form (HTML/CSS/JavaScript)**
+```html
+<!-- report_form.html -->
+<form id="report-form">
+  <label>Food Type:</label>
+  <input type="text" id="food-type"><br><br>
+  <label>Quantity:</label>
+  <input type="text" id="quantity"><br><br>
+  <button id="submit-report">Submit Report</button>
+</form>
+<script>
+  const form = document.getElementById('report-form');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const foodType = document.getElementById('food-type').value;
+    const quantity = document.getElementById('quantity').value;
+    // AJAX call to save report data
+  });
+</script>
+
+
+
+
+
+
+**AJAX call to save report data**
+```javascript
+// report_form.html script section
+const form = document.getElementById('report-form');
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const foodType = document.getElementById('food-type').value;
+  const quantity = document.getElementById('quantity').value;
+  $.ajax({
+    type: 'POST',
+    url: 'save_report.php',
+    data: { foodType, quantity },
+    success: function(response) {
+      console.log('Report saved!');
+    }
+  });
+});
+```
+**save_report.php**
+```php
+<?php
+require_once 'db_connect.php';
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+  $foodType = $_POST['foodType'];
+  $quantity = $_POST['quantity'];
+  $query = "INSERT INTO reports (food_type, quantity) VALUES ('$foodType', '$quantity')";
+  mysqli_query($conn, $query);
+}
+?>
+
+
+
+**Add CSS styling to report form**
+```css
+/* report_form.css */
+#report-form {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+#report-form label {
+  display: block;
+  margin-bottom: 10px;
+}
+#report-form input {
+  width: 100%;
+  height: 40px;
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+#submit-report {
+  background-color: #4CAF50;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+#submit-report:hover {
+  background-color: #3e8e41;
+}
+```
+Link CSS file to HTML:
+
+```html
+<!-- report_form.html -->
+
+<link rel="stylesheet" type="text/css" href="report_form.css">
+
+
+
+**Set up dashboard page**
+```html
+<!-- dashboard.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Food Waste Dashboard</title>
+  <link rel="stylesheet" type="text/css" href="dashboard.css">
+</head>
+<body>
+  <h1>Food Waste Reports</h1>
+  <table id="report-table">
+    <thead>
+      <tr>
+        <th>Food Type</th>
+        <th>Quantity</th>
+        <th>Date Reported</th>
+      </tr>
+    </thead>
+    <tbody id="report-table-body">
+      <!-- reports will be displayed here -->
+    </tbody>
+  </table>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $.ajax({
+        type: 'GET',
+        url: 'fetch_reports.php',
+        success: function(data) {
+          $('#report-table-body').html(data);
+        }
+      });
+    });
+  </script>
+</html>
+```
+**fetch_reports.php**
+```php
+<?php
+require_once 'db_connect.php';
+$query = "SELECT food_type, quantity, date_reported FROM reports";
+$result = mysqli_query($conn, $query);
+while ($row = mysqli_fetch_assoc($result)) {
+  echo "<tr><td>".$row['food_type']."</td><td>".$row['quantity']."</td><td>".$row['date_reported']."</td></tr>";
+}
+?>
+
